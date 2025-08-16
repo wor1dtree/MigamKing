@@ -37,18 +37,15 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        # 키보드 입력 처리
-        if event.type == pygame.KEYDOWN: # 키가 눌러졌는지 확인
-            if event.key == pygame.K_LEFT:
-                to_x -= character_speed
-            elif event.key == pygame.K_RIGHT:
-                to_x += character_speed
+    # 2. 눌려있는 키 확인하여 움직임 처리
+    keys = pygame.key.get_pressed() # 모든 키의 상태를 리스트로 받아옴
 
-        if event.type == pygame.KEYUP: # 키에서 손을 뗐을 때
-            if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                to_x = 0
-            elif event.key == pygame.K_UP or event.key == pygame.K_DOWN:
-                to_y = 0
+    to_x = 0 # 매번 0으로 초기화
+
+    if keys[pygame.K_LEFT]: # 왼쪽 키가 '눌려 있다면'
+        to_x -= character_speed
+    if keys[pygame.K_RIGHT]: # 오른쪽 키가 '눌려 있다면'
+        to_x += character_speed
 
     # 8. 캐릭터 위치 정의
     character_x_pos += to_x
@@ -68,7 +65,7 @@ while running:
 
     # 9. 화면에 그리기
     # screen.blit(background, (0, 0)) # 배경 그리기 (배경 이미지가 있다면)
-    screen.fill((0, 0, 255)) # 단색으로 배경 채우기 (파란색)
+    screen.fill((0, 0, 0)) # 단색으로 배경 채우기 (파란색)
 
     screen.blit(character, (character_x_pos, character_y_pos)) # 캐릭터 그리기
 
