@@ -3,7 +3,8 @@ import pickle
 import pygame
 
 """
-Environment: 게임 환경 설정을 관리합니다. 초기 설정, 저장 및 불러오기 기능을 포함합니다."""
+Environment: 게임 환경 설정을 관리합니다. 초기 설정, 저장 및 불러오기 기능을 포함합니다.
+"""
 
 class Environment:
 
