@@ -9,7 +9,6 @@ import collections
 import os
 import math
 import sys
-from hiddenwalls import HiddenWalls
 from Platforms import Platforms
 from Background import Backgrounds
 from Props import Props
@@ -65,7 +64,7 @@ class Levels:
 
 	def __init__(self, screen):
 
-		self.max_level = 42
+		self.max_level = 10 # 스테이지 개수에 맞게 수정
 
 		self.current_level = 0
 
