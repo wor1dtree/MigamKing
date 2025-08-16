@@ -1,99 +1,193 @@
 import pygame
+import math
+import os
+import re
 
-# 1. 파이게임 초기화
-pygame.init()
+"""
+Start: 게임 시작 시 로고, 타이틀, 오프닝 텍스트를 애니메이션 및 사운드와 함께 연출합니다.
+Title: 게임 타이틀 로고의 등장 애니메이션(위로 이동, 밝아지기, 흔들리기) 및 사라지는 효과를 제어합니다.
+Text: 오프닝 텍스트를 여러 줄로 나누고(줄 바꿈), 텍스트의 등장 및 사라지는 효과를 연출합니다.
+"""
 
-# 2. 화면 크기 설정
-screen_width = 800  # 가로 크기
-screen_height = 600 # 세로 크기
-screen = pygame.display.set_mode((screen_width, screen_height))
+class Start:
+	def __init__(self, screen, menus):
+		self.screen = screen
+		self.channels = [pygame.mixer.Channel(0), pygame.mixer.Channel(15)] # 0: Music, 15: Sound Effects
+		self.menus = menus
+		self.images = self._load_images()
+		self.audio = self._load_audio()
+		
+		# Animation
+		self.opacity = 255
+		self.opacity_fadespeed = 15
+		self.text = Text("전설에 따르면 탑의 꼭대기에는 식빵선생이 잠들어있다고 한다....") # opening text
+		self.title_logo = Title(self.images)
+		self.Nexile_Logo_Counter = 500
+		self.complete = False
 
-# 3. 화면 타이틀 설정
-pygame.display.set_caption("캐릭터 만들기")
+	def _load_audio(self):
+		audio = {}
+		for audio_name in os.listdir("audio\\start"):
+			audio[re.match(r"[^.]+", audio_name).group()] = pygame.mixer.Sound(f"audio\\start\\{audio_name}")
+		return audio		
 
-class Unit:
-    def __init__(self, x, y, speed):
-        """ 유닛 생성자: 위치, 속도, 이미지 등을 초기화합니다. """
-        
-        # --- 캐릭터 이미지 설정 ---
-        # 오른쪽을 보는 원본 이미지
-        self.image_right = pygame.image.load("./character/player.png") # 'character.png' 파일이 있어야 합니다.
-        # 원본 이미지를 좌우 반전시켜 왼쪽을 보는 이미지 생성
-        self.image_left = pygame.transform.flip(self.image_right, True, False)
-        
-        # 처음에는 오른쪽을 보도록 설정
-        self.image = self.image_right
-        
-        # --- 캐릭터 위치 및 크기 정보 ---
-        self.rect = self.image.get_rect() # 이미지의 사각형 정보를 가져옴
-        self.character_width = self.rect.size[0]
-        self.character_height = self.rect.size[1]
-        self.rect.topleft = (x, y-self.character_height)        # 사각형의 왼쪽 상단 좌표를 설정
-        
-        self.x = x
-        self.y = y-self.character_height
+	def _load_images(self):
+		images = {}
+		for image_name in os.listdir("images\\logos"):
+			images[re.match(r"[^.]+", image_name).group()] = pygame.image.load(f"images\\logos\\{image_name}").convert_alpha()
+		return images
 
-        # --- 캐릭터 방향 및 속도 ---
-        self.speed = speed
-        self.facing_right = True # 현재 오른쪽을 보고 있는지 여부 (True: 오른쪽, False: 왼쪽)
+	def blitme(self):
+		if not os.environ["start"]:
+			if self.Nexile_Logo_Counter:
+				pass
+			else:
+				self.title_logo.blitme(self.screen)
 
-    def move(self, keys):
-        """ 키 입력에 따라 캐릭터의 위치를 업데이트하고 방향에 맞춰 이미지를 변경합니다. """
-        
-        dx = 0 # 수평 이동량
-        
-        if keys[pygame.K_LEFT]:
-            dx -= self.speed
-            # 왼쪽으로 이동 시, 현재 이미지가 왼쪽 보는 이미지가 아니라면 변경
-            if self.facing_right:
-                self.image = self.image_left
-                self.facing_right = False
-                
-        if keys[pygame.K_RIGHT]:
-            dx += self.speed
-            # 오른쪽으로 이동 시, 현재 이미지가 오른쪽 보는 이미지가 아니라면 변경
-            if not self.facing_right:
-                self.image = self.image_right
-                self.facing_right = True
-        
-        # 계산된 이동량만큼 캐릭터의 x 좌표 업데이트
-        print(dx)
-        self.x += dx
-        print(self.rect.x)
+		else:
+			self.title_logo.blitme(self.screen)
 
-        # 경계값 처리 (캐릭터가 화면 밖으로 나가지 않도록)
-        if self.rect.x < 0:
-            self.x = 0
-        elif self.rect.x > screen_width - self.character_width:
-            self.x = screen_width - self.character_width
+		if os.environ["active"]:
+			if not self.title_logo.fadecomplete:
+				self.title_logo.blitme(self.screen)
+			elif self.title_logo.fadecomplete and not self.text.fadecomplete:
+				self.text.blitme(self.screen)
 
-    def draw(self, screen):
-        """ 캐릭터를 화면에 그립니다. """
-        screen.blit(self.image, (self.x, self.y))
-    
-player = Unit((screen_width / 2), screen_height, 0.3)
+	def update(self):
+		if not os.environ["start"]:
+			if self.Nexile_Logo_Counter:
+				pass
+			elif self.title_logo.y != self.title_logo.end and not self.title_logo.complete:
+				if not self.channels[0].get_busy():
+					self.channels[0].play(self.audio["menu_intro"])
+				self.title_logo.move_up()
+				self.title_logo.brighten()
+			else:
+				if not self.title_logo.complete:
+					self.channels[1].play(self.audio["title_hit"])
+				if not self.channels[0].get_busy():
+					self.channels[0].play(self.audio["menu_loop"])
+				self.title_logo.complete = True
+				self.title_logo.shake()
+				self.menus.current_menu = self.menus.menus["Press_Start"]
+				self.menus.current_menu.active = True
 
-# 6. 게임 루프
-running = True 
-while running:
-    # 7. 이벤트 처리
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT or event.type == pygame.K_ESCAPE:
-            running = False
+		if os.environ["active"]:
+			self.title_logo.fade()
+			for channel in self.channels:
+				channel.stop()
+			if self.title_logo.fadecomplete and not self.text.complete:
+				self.text.brighten()
+			elif self.text.complete and not self.text.fadecomplete:
+				self.text.fade()
+			elif self.text.fadecomplete and not self.complete:
+				self.fade()
+			elif self.complete:
+				self.reset()
+				os.environ["gaming"] = "1"
+				os.environ["pause"] = ""
 
-    # 2. 눌려있는 키 확인하여 움직임 처리
-    keys = pygame.key.get_pressed() # 모든 키의 상태를 리스트로 받아옴
+	def fade(self):
+		if self.opacity > 0:
+			self.opacity -= self.opacity_fadespeed
+		elif self.opacity == 0:
+			self.complete = True
 
-    player.move(keys)
+	def reset(self):
+		self.opacity = 255
+		self.Nexile_Logo_Counter = 500
+		self.complete = False
+		self.title_logo.reset()
+		self.text.reset()
 
-    # 9. 화면에 그리기
-    # screen.blit(background, (0, 0)) # 배경 그리기 (배경 이미지가 있다면)
-    screen.fill((0, 0, 0)) # 단색으로 배경 채우기 (파란색)
+class Title:
 
-    player.draw(screen)
+	def __init__(self, images):
+		self.images = images
+		self.shake_counter, self.shake_interval, self.shake_length = 21, 3, 5
+		self.start, self.end = round(int(os.environ.get("screen_width")) / 4), round(int(os.environ.get("screen_height")) / 8)
+		self.opacity = 0
+		self.opacity_fadespeed = 5
+		self.speed = 0.5
+		self.width, self.height = self.images["title_logo"].get_size()
+		self.x, self.y = round((int(os.environ.get("screen_width")) - self.width) / 2), self.start
+		self.complete = False
+		self.fadecomplete = False
+		self.inititated = False
 
-    # 10. 게임 화면 다시 그리기 (필수!)
-    pygame.display.update()
+	def reset(self):
+		self.shake_counter, self.shake_interval, self.shake_length = 21, 3, 5
+		self.start, self.end = round(int(os.environ.get("screen_width")) / 4), round(int(os.environ.get("screen_height")) / 8)
+		self.opacity = 0
+		self.opacity_fadespeed = 5
+		self.speed = 0.5
+		self.width, self.height = self.images["title_logo"].get_size()
+		self.x, self.y = round((int(os.environ.get("screen_width")) - self.width) / 2), self.start
+		self.complete = False
+		self.fadecomplete = False
+		self.inititated = False
 
-# 파이게임 종료
-pygame.quit()
+	def brighten(self):
+		self.opacity = int(255 * (1 - (self.y - self.end) / (self.start - self.end)))
+
+	def fade(self):
+		if self.opacity > 0:
+			self.opacity -= self.opacity_fadespeed
+		else:
+			self.fadecomplete = True
+
+	def shake(self):
+		if self.shake_counter:
+			if not self.shake_counter // self.shake_interval % 2:
+				self.y = self.end - self.shake_length
+			elif self.shake_counter // self.shake_interval % 2:
+				self.y = self.end + self.shake_length
+			self.shake_counter -= 1
+
+	def blitme(self, screen):
+		image = self.images["title_logo"].copy()
+		middle_screen = pygame.Surface(image.get_size(), pygame.SRCALPHA)
+		middle_screen.fill((255, 255, 255, self.opacity))
+		image.blit(middle_screen, (0, 0), special_flags = pygame.BLEND_RGBA_MULT)
+		screen.blit(image, (int(self.x), int(self.y)))			
+
+	def move_up(self):
+		self.y -= self.speed
+
+
+
+class Text(Title):
+	def __init__(self, text):
+		self.font = pygame.font.Font("Fonts\\ttf_pixolde_bold.ttf", 20)
+		self.text = self._fold(text)
+		self.opacity = 0
+		self.opacity_fadespeed = 1
+		self.complete = False
+		self.fadecomplete = False
+
+	def reset(self):
+		self.opacity = 0
+		self.opacity_fadespeed = 1
+		self.complete = False
+		self.fadecomplete = False	
+
+	def _fold(self, text):
+		t = []
+		for index, line in enumerate(map(lambda x: x[0], re.findall(r"(([^ .,!?]+[ .,!?]*){0,6})", text))):
+			t.append(self.font.render(line, True, (255, 255, 255)))
+		return t
+
+	def blitme(self, screen):
+		text_screen = pygame.Surface((max([text.get_width() for text in self.text]), sum([text.get_height() for text in self.text])), pygame.SRCALPHA)
+		middle_screen = pygame.Surface(text_screen.get_size(), pygame.SRCALPHA)
+		middle_screen.fill((255, 255, 255, self.opacity))
+		for index, text in enumerate(self.text):
+			text_screen.blit(text, ((text_screen.get_width() - text.get_width()) / 2, (index)*text.get_height()))
+		text_screen.blit(middle_screen, (0, 0), special_flags = pygame.BLEND_RGBA_MULT)
+		screen.blit(text_screen, ((screen.get_width() - text_screen.get_width()) / 2, (screen.get_height() - text_screen.get_height()) / 2))	
+
+	def brighten(self):
+		if self.opacity != 255:
+			self.opacity += self.opacity_fadespeed
+		elif self.opacity == 255:
+			self.complete = True
