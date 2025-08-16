@@ -182,29 +182,14 @@ class Rectangles:
 							(472, 0, 8, 360, 0, 0, False, False),
 							(56, 279, 48, 49, (-1, 1), 0, False, False)]
 
-		self.levels[10]	=	[(120, 0, 33, 9, 0, 0, False, False),
-							(153, 0, 47, 40, 0, 0, False, False),
-							(153, 40, 23, 40, 0, 0, False, False),
-							(153, 80, 47, 24, 0, 0, False, False),
-							(153, 168, 47, 32, 0, 0, False, False),
-							(8, 120, 24, 25, 0, 0, False, False),
-							(8, 209, 32, 15, 0, 0, False, False),
-							(153, 240, 47, 120, 0, 0, False, False),
-							(248, 0, 47, 8, 0, 0, False, False),
-							(248, 48, 47, 15, 0, 0, False, False),
-							(248, 113, 47, 63, 0, 0, False, False),
-							(273, 63, 22, 50, 0, 0, False, False),
-							(249, 240, 46, 32, 0, 0, False, False),
+		self.levels[10]	=	[(8, 120, 100, 25, 0, 0, False, False),
 							(249, 320, 46, 40, 0, 0, False, False),
-							(344, 0, 48, 63, 0, 0, False, False),
+							(249, 240, 46, 32, 0, 0, False, False),
 							(344, 128, 48, 32, 0, 0, False, False),
 							(344, 224, 48, 32, 0, 0, False, False),
 							(344, 344, 48, 15, 0, 0, False, False),
-							(441, 48, 39, 15, 0, 0, False, False),
 							(440, 128, 40, 34, 0, 0, False, False),
-							(0, 0, 8, 360, 0, 0, False, False),
-							(472, 0, 8, 360, 0, 0, False, False),
-							(32, 120, 24, 25, (-1, 1), 0, False, False)]
+							]
 
 
 class Platform():
