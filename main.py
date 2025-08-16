@@ -1,13 +1,16 @@
 import pygame
 import sys
+from environment import Environment
 
 pygame.init()
+
+env = Environment()
 
 gauge_show = False
 
 # --- 화면 설정 ---
-screen_width = 800
-screen_height = 600
+screen_width = int(os.environ["screen_width"])
+screen_height = int(os.environ["screen_height"])
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("캐릭터 만들기")
 
@@ -171,5 +174,5 @@ while running:
 
     pygame.display.update()
 
+env.save()
 pygame.quit()
-
